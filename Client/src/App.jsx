@@ -1,25 +1,25 @@
-// App.jsx
-
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext.jsx';
 import ProtectedRoute from './contexts/ProtectedRoute.jsx';
-import NavBar from './Navbar.jsx';
-import './App.css'; // Assuming your CSS is in this file
+import NavBar from './NavBar.jsx';
+import BarcodeGenerator from './BarcodeGenerator';
+
+
 
 // Lazy load components
 const HomePage = lazy(() => import('./HomePage.jsx'));
 const LoginPage = lazy(() => import('./components/Auth/LoginPage.jsx'));
 const SignupPage = lazy(() => import('./components/Auth/SignupPage.jsx'));
 const DashboardPage = lazy(() => import('./DashboardPage.jsx'));
+const Profile = lazy(() => import('./Profile.jsx'));
 const NotFoundPage = lazy(() => import('./NotFound.jsx'));
-const BarcodeGenerator = lazy(() => import('./BarcodeGenerator.jsx'));
 const Register = lazy(() => import('./Register.jsx'));
 const PatientList = lazy(() => import('./components/Patient/PatientList.jsx'));
 const AcceptedPatients = lazy(() => import('./components/Patient/AcceptedPatients.jsx'));
 const TestBooking = lazy(() => import('./components/Test/testList.jsx'));
 const Patient = lazy(() => import('./Patient.jsx'));
-const TestBookingsList = lazy(() => import('./Text.jsx'));
+const TestBookingsList = lazy(() => import('./Test.jsx'));
 const AccountingPage = lazy(() => import('./accounting.jsx'));
 const PrintedTests = lazy(() => import('./master.jsx'));
 const About = lazy(() => import('./Profile.jsx'));
@@ -123,7 +123,15 @@ const App = () => {
                 path="/Profile"
                 element={
                   <ProtectedRoute>
-                    <DashboardPage />
+                    <About />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/DashboardPage"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
                   </ProtectedRoute>
                 }
               />
