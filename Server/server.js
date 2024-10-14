@@ -81,17 +81,7 @@ db.serialize(() => {
       password TEXT
     )
   `);
-  db.all('PRAGMA table_info(Haematology);', [], (err, rows) => {
-    if (err) {
-      console.error('Error checking Haematology table structure:', err);
-      return;
-    }
-    console.log('Haematology table structure:', rows);
-  });
-
-
-
-    // Create the patients table with all required columns
+   // Create the patients table with all required columns
     db.run(
       `CREATE TABLE IF NOT EXISTS patients (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -105,27 +95,13 @@ db.serialize(() => {
         sex TEXT,
         status TEXT DEFAULT 'pending',
         home_service TEXT,
-        visit_time TEXT, -- Add visit_time column here
+        visit_time TEXT,
         payment_mode TEXT,
         test_submission_time TEXT
       )`,
-      (err) => {
-        if (err) {
-          console.error('Error creating patients table:', err);
-          return;
-        }
-        console.log('Patients table created successfully.');
-
-        // Confirm table schema using PRAGMA
-        db.all("PRAGMA table_info(patients);", (err, columns) => {
-          if (err) {
-            console.error('Error checking patients table schema:', err);
-            return;
-          }
-        });
-      }
     );
-  });
+  });  
+
 
   db.run(`CREATE TABLE IF NOT EXISTS contact_form (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -162,13 +138,8 @@ db.serialize(() => {
         FOREIGN KEY (patient_no) REFERENCES patients(patient_no),
         FOREIGN KEY (lab_no) REFERENCES lab_numbers(lab_no)
       )
-    `, (err) => {
-      if (err) {
-        console.error('Error creating test_bookings table:', err);
-      } else {
-        console.log('test_bookings table created successfully.');
-      }
-    });
+    `, 
+    );
   });
   
 
@@ -199,7 +170,6 @@ db.run(`DROP TABLE IF EXISTS test_details`)
       description TEXT
     )
   `);
-        db.run(`DROP TABLE IF EXISTS printed_tests`)
         // Create the printed_tests table with the updated schema
         db.run(`
           CREATE TABLE IF NOT EXISTS printed_tests (
@@ -284,44 +254,19 @@ db.run(`DROP TABLE IF EXISTS test_details`)
 
   
   // Create the Haematology table
-  db.serialize(() => {
-    db.run(`DROP TABLE IF EXISTS Haematology`, (err) => {
-      if (err) {
-        console.error('Error dropping Haematology table:', err);
-      } else {
-        console.log('Haematology table dropped successfully.');
-      }
-  
       db.run(`
-        CREATE TABLE Haematology (
+        CREATE TABLE IF NOT EXISTS Haematology(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           investigation TEXT NOT NULL,
           result TEXT NOT NULL,
           reference_range TEXT NOT NULL,
           booking_id INTEGER
         )
-      `, (err) => {
-        if (err) {
-          console.error('Error creating Haematology table:', err);
-        } else {
-          console.log('Haematology table created successfully.');
-        }
-      });
-    });
-  });
+      `, 
+  );
+ 
   
-db.run(`ALTER TABLE patients ADD COLUMN home_service TEXT;
- TEXT`, (err) => {
-  if (err) {
-    if (err.message.includes("duplicate column name")) {
-      console.log("Column 'home service' already exists.");
-    } else {
-      console.error("Error adding 'home service' column:", err);
-    }
-  } else {
-    console.log("'home service' column added successfully.");
-  }
-});
+
  // Create the ParasitologyTests table
  db.run(`
    CREATE TABLE IF NOT EXISTS ParasitologyTests (
@@ -331,19 +276,6 @@ db.run(`ALTER TABLE patients ADD COLUMN home_service TEXT;
      result TEXT NOT NULL
    )
  `);
-
- db.run(`
-  ALTER TABLE parasitologyTests
-  ADD COLUMN patient_id INTEGER;
-`, (err) => {
-  if (err) {
-    console.error('Error adding patient_id column:', err);
-  } else {
-    console.log('patient_id column added successfully to parasitologyTests.');
-  }
-});
-
- 
 
 
 // User registration endpoint
@@ -526,136 +458,23 @@ app.delete('/patients/:id', (req, res) => {
 
 // Endpoint to save test booking
 app.post('/test-booking', (req, res) => {
-  console.log('Received request body:', req.body);
-  const { patient_no, lab_no, name, sex, age, time, specimen, investigation, referredBy, date, tests, serology, urinalysis, biochemistry, haematology, parasitology } = req.body;
-
-  // Define required fields
-  const requiredFields = ['patient_no', 'lab_no', 'name', 'sex', 'age', 'time', 'specimen', 'investigation', 'referredBy', 'date'];
-  
-  // Check for missing required fields
-  const missingFields = requiredFields.filter(field => !req.body[field]);
-  if (missingFields.length > 0) {
-    return res.status(400).send(`Missing required fields: ${missingFields.join(', ')}`);
-  }
+  console.log('Received request:', req.body);
+  const { patient_no, lab_no, name } = req.body;
 
   const testBookingQuery = `
-    INSERT INTO test_bookings (patient_no, lab_no, name, sex, age, time, specimen, investigation, referredBy, date)
-     VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO test_bookings (patient_no, lab_no, name) 
+    VALUES (?, ?, ?)
   `;
-
-  db.run(testBookingQuery, [patient_no, lab_no, name, sex, age, time, specimen, investigation, referredBy, date], function (err) {
+  db.run(testBookingQuery, [patient_no, lab_no, name], function (err) {
     if (err) {
-      console.error('Error saving test booking:', err);
-      return res.status(500).send('Failed to save test booking');
+      console.error('Error saving booking:', err);
+      return res.status(500).send('Failed to save booking');
     }
-
-    const bookingId = this.lastID;
-
-    // Insert into test_details table
-    const testDetailsQuery = `
-      INSERT INTO test_details (booking_id, test_id, test_name, rate, reference_range, interpretation, price_naira, remark )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    const stmt = db.prepare(testDetailsQuery);
-    for (const test of tests) {
-      stmt.run([bookingId, test.id, test.name, test.rate, test.referenceRange, test.interpretation, test.price_naira, test.remark], function (err) {
-        if (err) {
-          console.error('Error saving test details:', err);
-          return res.status(500).send('Failed to save test details');
-        }
-      });
-    }
-    stmt.finalize();
-
-    // Insert into serology table if data is provided
-    if (Array.isArray(serology)) {
-      const serologyQuery = `
-        INSERT INTO serology (patient_id, test, methodology, result)
-        VALUES (?, ?, ?, ?)
-      `;
-      const serologyStmt = db.prepare(serologyQuery);
-      for (const test of serology) {
-        serologyStmt.run([patient_no, test.test, test.methodology, test.result], function (err) {
-          if (err) {
-            console.error('Error saving serology details:', err);
-            return res.status(500).send('Failed to save serology details');
-          }
-        });
-      }
-      serologyStmt.finalize();
-    }
-
-    // Insert into urinalysis table if data is provided
-    if (urinalysis) {
-      const urinalysisQuery = `
-        INSERT INTO urinalysis (patient_id, colour, appearance, pH, specific_gravity, urobilinogen, leukocyte, bilirubin, blood, nitrite, protein, glucose, ketones, comment)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `;
-      const urinalysisStmt = db.prepare(urinalysisQuery);
-      urinalysisStmt.run([patient_no, urinalysis.colour, urinalysis.appearance, urinalysis.pH, urinalysis.specific_gravity, urinalysis.urobilinogen, urinalysis.leukocyte, urinalysis.bilirubin, urinalysis.blood, urinalysis.nitrite, urinalysis.protein, urinalysis.glucose, urinalysis.ketones, urinalysis.comment], function (err) {
-        if (err) {
-          console.error('Error saving urinalysis details:', err);
-          return res.status(500).send('Failed to save urinalysis details');
-        }
-      });
-      urinalysisStmt.finalize();
-    }
-
-    // Insert into biochemistry table if data is provided
-    if (biochemistry) {
-      const biochemistryQuery = `
-        INSERT INTO biochemistry (patient_id, bilirubin_total, bilirubin_direct, ast_sgot, alt_sgpt, alp, albumin, total_protein, urea, creatinine, sodium, potassium, chloride, bicarbonate, total_cholesterol, hdl, ldl, triglycerides, vldl, fasting_blood_sugar)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `;
-      const biochemistryStmt = db.prepare(biochemistryQuery);
-      biochemistryStmt.run([patient_no, biochemistry.bilirubin_total, biochemistry.bilirubin_direct, biochemistry.ast_sgot, biochemistry.alt_sgpt, biochemistry.alp, biochemistry.albumin, biochemistry.total_protein, biochemistry.urea, biochemistry.creatinine, biochemistry.sodium, biochemistry.potassium, biochemistry.chloride, biochemistry.bicarbonate, biochemistry.total_cholesterol, biochemistry.hdl, biochemistry.ldl, biochemistry.triglycerides, biochemistry.vldl, biochemistry.fasting_blood_sugar], function (err) {
-        if (err) {
-          console.error('Error saving biochemistry details:', err);
-          return res.status(500).send('Failed to save biochemistry details');
-        }
-      });
-      biochemistryStmt.finalize();
-    }
-
-    // Insert into haematology table if data is provided
-    if (Array.isArray(haematology)) {
-      const haematologyQuery = `
-        INSERT INTO haematology (investigation, result, reference_range)
-        VALUES (?, ?, ?)
-      `;
-      const haematologyStmt = db.prepare(haematologyQuery);
-      for (const test of haematology) {
-        haematologyStmt.run([test.investigation, test.result, test.reference_range], function (err) {
-          if (err) {
-            console.error('Error saving haematology details:', err);
-            return res.status(500).send('Failed to save haematology details');
-          }
-        });
-      }
-      haematologyStmt.finalize();
-    }
-
-    // Insert into parasitology table if data is provided
-    if (Array.isArray(parasitology)) {
-      const parasitologyQuery = `
-        INSERT INTO parasitology (test, methodology, result)
-        VALUES (?, ?, ?)
-      `;
-      const parasitologyStmt = db.prepare(parasitologyQuery);
-      for (const test of parasitology) {
-        parasitologyStmt.run([test.test, test.methodology, test.result], function (err) {
-          if (err) {
-            console.error('Error saving parasitology details:', err);
-            return res.status(500).send('Failed to save parasitology details');
-          }
-        });
-      }
-      parasitologyStmt.finalize();
-    }
-
-    res.status(201).send('Test booking saved successfully');
+    console.log(`New booking inserted with ID ${this.lastID}`);
+    res.status(201).send('Booking saved');
   });
 });
+
 
 // Endpoint to delete test booking by IDs
 app.post('/test-booking/:id', async (req, res) => {
@@ -696,120 +515,23 @@ app.post('/test-booking/:id', async (req, res) => {
 
 // Endpoint to get all test bookings
 app.get('/test-bookings', (req, res) => {
-  const query = `
-SELECT tb.test_id AS id, 
-         tb.*, 
-         td.test_name, td.rate, td.reference_range, td.interpretation, td.price_naira, td.remark,
-         s.test AS serology_test, s.methodology AS serology_methodology, s.result AS serology_result,
-         u.colour, u.appearance, u.pH, u.specific_gravity, u.urobilinogen, u.leukocyte, u.bilirubin, 
-         u.blood, u.nitrite, u.protein, u.glucose, u.ketones, u.comment,
-         b.bilirubin_total, b.bilirubin_direct, b.ast_sgot, b.alt_sgpt, b.alp, b.albumin, b.total_protein, 
-         b.urea, b.creatinine, b.sodium, b.potassium, b.chloride, b.bicarbonate, b.total_cholesterol, 
-         b.hdl, b.ldl, b.triglycerides, b.vldl, b.fasting_blood_sugar,
-         h.investigation AS haematology_investigation, h.result AS haematology_result, 
-         h.reference_range AS haematology_reference_range,
-         p.test AS parasitology_test, p.methodology AS parasitology_methodology, p.result AS parasitology_result
-  FROM test_bookings tb
-  LEFT JOIN test_details td ON tb.test_id = td.booking_id
-  LEFT JOIN serology s ON tb.patient_no = s.patient_id
-  LEFT JOIN urinalysis u ON tb.patient_no = u.patient_id
-  LEFT JOIN biochemistry b ON tb.patient_no = b.patient_id
-  LEFT JOIN Haematology h ON tb.patient_no = h.id  -- Adjusted join condition
-  LEFT JOIN parasitologyTests p ON tb.patient_no = p.patient_id;
-`;
-  
+  const query = 'SELECT * FROM test_bookings';
   db.all(query, [], (err, rows) => {
     if (err) {
-      console.error('Error retrieving test bookings:', err);
-      return res.status(500).send('Failed to retrieve test bookings');
+      console.error('Error retrieving bookings:', err.message);
+      return res.status(500).send('Failed to retrieve bookings');
     }
 
-    const bookings = rows.reduce((acc, row) => {
-      let booking = acc.find(b => b.id === row.id);
-      if (!booking) {
-        booking = {
-          id: row.id,
-          patient_id: row.patient_id,
-          lab_no: row.lab_no,
-          name: row.name,
-          sex: row.sex,
-          age: row.age,
-          investigation: row.investigation,
-          referredBy: row.referredBy,
-          specimen: row.specimen,
-          date: row.date,
-           tests: [], serology: [], urinalysis: row.colour ? { colour: row.colour, appearance: row.appearance,
-            pH: row.pH,
-            specific_gravity: row.specific_gravity,
-            urobilinogen: row.urobilinogen,
-            leukocyte: row.leukocyte,
-            bilirubin: row.bilirubin,
-            blood: row.blood,
-            nitrite: row.nitrite,
-            protein: row.protein,
-            glucose: row.glucose,
-            ketones: row.ketones,
-            comment: row.comment
-          } : null,
-          biochemistry: row.bilirubin_total ? {
-            bilirubin_total: row.bilirubin_total,
-            bilirubin_direct: row.bilirubin_direct,
-            ast_sgot: row.ast_sgot,
-            alt_sgpt: row.alt_sgpt,
-            alp: row.alp,
-            albumin: row.albumin,
-            total_protein: row.total_protein,
-            urea: row.urea,
-            creatinine: row.creatinine,
-            sodium: row.sodium,
-            potassium: row.potassium,
-            chloride: row.chloride,
-            bicarbonate: row.bicarbonate,
-            total_cholesterol: row.total_cholesterol,
-            hdl: row.hdl,
-            ldl: row.ldl,
-            triglycerides: row.triglycerides,
-            vldl: row.vldl,
-            fasting_blood_sugar: row.fasting_blood_sugar
-          } : null,
-          haematology: [],
-          parasitology: []
-        };
-        acc.push(booking);
-      }
-      if (row) {
-        booking.tests.push({
-          name: row.test_name,
-          rate: row.rate,
-          reference_range: row.reference_range,
-          interpretation: row.interpretation,
-          price_naira: row.price_naira,
-          remark: row.remark,
-        });
-      }
-      console.log(booking.tests)
-      if (row.serology_test) {
-        booking.serology.push({
-          test: row.serology_test,
-          methodology: row.serology_methodology,
-          result: row.serology_result
-        });
-      }
+    console.log(`Bookings retrieved: ${JSON.stringify(rows)}`); // Log the retrieved data
 
-      if (row.haematology_investigation) {
-        booking.haematology.push({
-          investigation: row.haematology_investigation,
-          result: row.haematology_result,
-          reference_range: row.haematology_reference_range
-        });
-      }
-
-      return acc;
-    }, []);
-    console.log(bookings)
-    res.status(200).json(bookings);
+    if (rows.length === 0) {
+      console.warn('No bookings found in the database.');
+    }
+    
+    res.status(200).json(rows);
   });
 });
+
 
 
 
@@ -834,8 +556,7 @@ app.delete('/test-bookings/:id', (req, res) => {
 app.post('/printed-tests', async (req, res) => {
   console.log('Received request body:', req.body);
   const { tests } = req.body;
-  
-  // Check if tests is provided and is an array
+
   if (!tests || !Array.isArray(tests) || tests.length === 0) {
     return res.status(400).send('No tests provided');
   }
@@ -849,94 +570,34 @@ app.post('/printed-tests', async (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  const checkTestDetailsQuery = `
-    SELECT test_id FROM test_details 
-    WHERE test_name = ? AND rate = ? AND reference_range = ? AND interpretation = ? 
-    AND price_naira = ? AND remark = ?
-  `;
-
-  const insertTestDetailsQuery = `
-    INSERT INTO test_details (test_name, rate, reference_range, interpretation, price_naira, remark) 
-    VALUES (?, ?, ?, ?, ?, ?)
-  `;
-
   try {
+    const insertedTests = []; // Store inserted tests
+
     for (const test of tests) {
-      // Check if 'test.tests' exists and is an array
-      if (!Array.isArray(test.tests)) {
-        return res.status(400).send(`Invalid tests array for patient ${test.name}`);
-      }
+      const { patient_id, lab_no, name, sex, age, age_unit, time, specimen, referredBy, date, investigation, rate, price_naira, reference_range, interpretation, remark } = test;
 
-      const { lab_no, name, sex, age, investigation, specimen, date, patient_id, age_unit, time, referredBy } = test;
+      const values = [patient_id, lab_no, name, sex, age, age_unit, time, specimen, referredBy, date, investigation, rate, price_naira, reference_range, interpretation, remark].map(value => value ?? null);
 
-      for (const innerTest of test.tests) {
-        const { test_name, rate, reference_range, interpretation, price_naira, remark } = innerTest;
-
-        // Check if the test details already exist
-        const testDetail = await getTestDetail(test_name, rate, reference_range, interpretation, price_naira, remark);
-
-        let test_id;
-        if (testDetail) {
-          test_id = testDetail.test_id;
-        } else {
-          // Insert the test details if they don't exist
-          test_id = await insertTestDetail(test_name, rate, reference_range, interpretation, price_naira, remark);
-        }
-
-        // Insert the printed test
-        const values = [
-          patient_id, lab_no, name, sex, age, age_unit, time, specimen, referredBy, date,
-          investigation, rate, price_naira, reference_range, interpretation, remark
-        ].map(value => (value === undefined ? null : value));
-
-        await insertPrintedTest(values);
-      }
+      await new Promise((resolve, reject) => {
+        db.run(printedTestQuery, values, function (err) {
+          if (err) {
+            console.error('Error saving printed test:', err);
+            return reject(err);
+          }
+          insertedTests.push({ id: this.lastID, ...test }); // Store each inserted test with its ID
+          resolve();
+        });
+      });
     }
 
-    res.status(201).send('Printed tests saved successfully');
+    res.status(201).json(insertedTests); // Send inserted tests back to frontend
+
   } catch (error) {
     console.error('Error saving printed test:', error);
     res.status(500).send('Failed to save printed test');
   }
-
-  // Helper functions for async/await pattern
-
-  async function getTestDetail(test_name, rate, reference_range, interpretation, price_naira, remark) {
-    return new Promise((resolve, reject) => {
-      db.get(checkTestDetailsQuery, [test_name, rate, reference_range, interpretation, price_naira, remark], (err, row) => {
-        if (err) {
-          console.error('Error checking test details:', err);
-          return reject(err);
-        }
-        resolve(row);
-      });
-    });
-  }
-
-  async function insertTestDetail(test_name, rate, reference_range, interpretation, price_naira, remark) {
-    return new Promise((resolve, reject) => {
-      db.run(insertTestDetailsQuery, [test_name, rate, reference_range, interpretation, price_naira, remark], function (err) {
-        if (err) {
-          console.error('Error saving test details:', err);
-          return reject(err);
-        }
-        resolve(this.lastID); // Return the inserted test detail's ID
-      });
-    });
-  }
-
-  async function insertPrintedTest(values) {
-    return new Promise((resolve, reject) => {
-      db.run(printedTestQuery, values, (err) => {
-        if (err) {
-          console.error('Error saving printed test:', err);
-          return reject(err);
-        }
-        resolve();
-      });
-    });
-  }
 });
+
 
 
 // Retrieve all printed tests
@@ -952,70 +613,6 @@ app.get('/masters', (req, res) => {
   });
 });
 
-
-
-// // Retrieve printed tests with patient information
-// app.get('/printed-tests', (req, res) => {
-//   const query = `
-//     SELECT pt.*, p.first_name, p.last_name, p.dob, p.email, p.phone
-//     FROM printed_tests pt
-//     LEFT JOIN patients p ON pt.patient_id = p.patient_no
-//   `;
-//   db.all(query, [], (err, rows) => {
-//     if (err) {
-//       console.error('Error retrieving printed tests:', err);
-//       return res.status(500).send('Failed to retrieve printed tests');
-//     }
-//     const printedTests = rows.reduce((acc, row) => {
-//       const test = {
-//         test_id: row.test_id,
-//         name: row.name,
-//         sex: row.sex,
-//         age: row.age,
-//          specimen: row.specimen,
-//         investigation: row.investigation,
-//         referred_by: row.referred_by,
-//         date: row.date,
-//         test_name: row.test_name,
-//         rate: row.rate,
-//         price_naira: row.price_naira,
-//         reference_range: row.reference_range,
-//         interpretation: row.interpretation,
-//         remark : row.remark
-//       };
-//       const patient = acc.find(p => p.patient_no === row.patient_id);
-//       if (patient) {
-//         patient.tests.push(test);
-//       } else {
-//         acc.push({
-//           patient_no: row.patient_id,
-//           first_name: row.first_name,
-//           last_name: row.last_name,
-//           dob: row.dob,
-//           email: row.email,
-//           phone: row.phone,
-//           tests: [test]
-//         });
-//       }
-//       return acc;
-//     }, []);
-//     res.status(200).json(printedTests);
-//   });
-// });
-
-// // Retrieve all printed tests
-// app.get('/masters', (req, res) => {
-//   db.all('SELECT * FROM printed_tests', [], (err, rows) => {
-//     if (err) {
-//       console.error('Error retrieving printed tests:', err);
-//       res.status(500).send('Error retrieving printed tests');
-//       return;
-//     }
-//     console.log("Retrieved data:", JSON.stringify(rows, null, 2)); // Log retrieved data
-//     res.status(200).json(rows);
-//   });
-// });
-// Endpoint to get total prices of printed tests grouped by month, week, and gender
 app.get('/printed-tests-summary', (req, res) => {
   const queryMonthly = `
     SELECT 
