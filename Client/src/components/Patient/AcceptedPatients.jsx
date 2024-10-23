@@ -1,8 +1,6 @@
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import './AcceptedPatients.css';
-import {  useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const AcceptedPatients = () => {
   const [patients, setPatients] = useState([]);
@@ -24,11 +22,11 @@ const AcceptedPatients = () => {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center h-screen text-xl text-gray-500">Loading...</div>;
   }
 
   if (error) {
-    return <div>{error}</div>;
+    return <div className="flex justify-center items-center h-screen text-xl text-red-600">{error}</div>;
   }
 
   const handleRowClick = (patient) => {
@@ -36,36 +34,44 @@ const AcceptedPatients = () => {
   };
 
   return (
-    <div className="patient-container">
-      <h2>Accepted Patients</h2>
-      <table className="patient-details-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Date of Birth</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Test Type</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {patients.map(patient => (
-            <tr key={patient.id} onClick={() => handleRowClick(patient)}>
-              <td>{patient.id}</td>
-              <td>{patient.first_name}</td>
-              <td>{patient.last_name}</td>
-              <td>{patient.dob}</td>
-              <td>{patient.email}</td>
-              <td>{patient.phone}</td>
-              <td>{patient.test_type}</td>
-              <td>{patient.status}</td>
+    <div className="container mx-auto px-4 py-10">
+      <h2 className='text-4xl font-bold mt-20 text-center mb-8 text-gray-800'>Accepted Patients</h2>
+      <div className="overflow-x-auto">
+        <table className="w-full table-auto bg-white shadow-lg rounded-lg border border-gray-200">
+          <thead>
+            <tr className="bg-blue-600 text-white">
+              <th className="py-3 px-6">ID</th>
+              <th className="py-3 px-6">First Name</th>
+              <th className="py-3 px-6">Last Name</th>
+              <th className="py-3 px-6">Date of Birth</th>
+              <th className="py-3 px-6">Email</th>
+              <th className="py-3 px-6">Phone</th>
+              <th className="py-3 px-6">Test Type</th>
+              <th className="py-3 px-6">Status</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {patients.map(patient => (
+              <tr 
+                key={patient.id} 
+                onClick={() => handleRowClick(patient)} 
+                className="cursor-pointer hover:bg-blue-100 transition-all border-b"
+              >
+                <td className="py-3 px-6 text-green-600">{patient.id}</td>
+                <td className="py-3 px-6">{patient.first_name}</td>
+                <td className="py-3 px-6">{patient.last_name}</td>
+                <td className="py-3 px-6">{patient.dob}</td>
+                <td className="py-3 px-6">{patient.email}</td>
+                <td className="py-3 px-6">{patient.phone}</td>
+                <td className="py-3 px-6">{patient.test_type}</td>
+                <td className={`py-3 px-6 font-semibold ${patient.status === 'Pending' ? 'text-yellow-500' : 'text-green-500'}`}>
+                  {patient.status}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

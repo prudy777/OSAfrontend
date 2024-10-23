@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'react-qr-code';
-import './BarcodeGenerator.css';
 import './Register.jsx';
 
 const BarcodeGenerator = () => {
@@ -12,8 +11,11 @@ const BarcodeGenerator = () => {
     }, []); // Runs once on mount
 
     return (
-        <div style={{ textAlign: 'center' }}>
-            <h2>Patient Registration Barcode</h2>
+        <div className='bg-blue-200'>
+            <div className='flex flex-col text-center items-center justify-center border border-blue-400'>
+            <div className='mt-20'>
+            <h2 className='mt-10 text-blue-600 font-bold text-3xl mb-10'>Patient Registration Barcode</h2>
+            </div>
             <QRCode
                 className="qr"
                 value={registrationUrl}
@@ -22,7 +24,10 @@ const BarcodeGenerator = () => {
                 fgColor={"#000000"}
                 level={"H"}
             />
-            <p>Scan to register a patient</p>
+            <p className='mt-3 mb-5 font-bold'>Scan to register a patient</p>
+ 
+            </div>       
+            
         </div>
     );
 };

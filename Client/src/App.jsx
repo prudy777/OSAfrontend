@@ -25,7 +25,7 @@ const PrintedTests = lazy(() => import('./master.jsx'));
 const About = lazy(() => import('./Profile.jsx'));
 const TestBookings = lazy(() => import('./generalscreening.jsx'));
 const TestBookingmen = lazy(() => import('./malescreening.jsx'));
-const OsamedicRecordsb12sitescom = lazy(() => import('./OsamedicRecordsb12sitescom.jsx'));
+
 
 const App = () => {
   return (
@@ -92,14 +92,7 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <OsamedicRecordsb12sitescom />
-                  </ProtectedRoute>
-                }
-              />
+              
               <Route
                 path="/general"
                 element={
@@ -117,7 +110,7 @@ const App = () => {
                 }
               />
               <Route path="/" element={<HomePage />} />
-              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/signupPage" element={<SignupPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route
                 path="/Profile"
@@ -131,7 +124,7 @@ const App = () => {
                 path="/DashboardPage"
                 element={
                   <ProtectedRoute>
-                    <Profile />
+                    <DashboardPage />
                   </ProtectedRoute>
                 }
               />

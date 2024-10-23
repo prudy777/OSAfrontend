@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext'; // Assuming this is set up correctly
 import { useNavigate } from 'react-router-dom';
 import Logo from '../../assets/med4.jpg';
 import Logo3 from '../../assets/med1.jpg';
@@ -8,57 +8,58 @@ import Logo2 from '../../assets/med3.jpg';
 import * as Icons from 'react-bootstrap-icons';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
-const allowedEmail = 'prudy777@gmail.com';
-const allowedPassword = 'progees';
-
 function ImageCarousel() {
-  const images = [Logo,Logo2,Logo3, Logo4]; // Add more image imports if needed
+  const images = [Logo, Logo2, Logo3, Logo4]; // Images for the carousel
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
     }, 4000); // Change image every 4 seconds
-    return () => clearInterval(interval); // Cleanup on unmount
+    return () => clearInterval(interval); // Cleanup
   }, [images.length]);
-
-  
 
   return (
     <div className="relative m-20 p-10 mr-10 w-full h-full overflow-hidden">
-      <div className="absolute  inset-0 flex transition-transform duration-1000" style={{ transform: `translateX(-${currentIndex * 100}%)` }}>
+      <div className="absolute inset-0 flex transition-transform duration-1000" style={{ transform: `translateX(-${currentIndex * 100}%)` }}>
         {images.map((image, index) => (
           <div key={index} className="w-full h-full flex-shrink-0" style={{ backgroundImage: `url(${image})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
         ))}
+        
       </div>
-
       {/* Dots for pagination */}
       <div className="absolute px-4 left-0 right-0 flex justify-center space-x-2">
         {images.map((_, index) => (
           <div
             key={index}
             onClick={() => setCurrentIndex(index)}
-            className={`w-60 h-2 rounded-full cursor-pointer ${index === currentIndex ? 'bg-blue-500' : 'bg-gray-300'}`}
+            className={`w-3 h-3 rounded-full cursor-pointer ${index === currentIndex ? 'bg-blue-500' : 'bg-gray-300'}`}
           />
         ))}
       </div>
-    </div>
+
+      <div className='relative justify-center flex flex-col items-center mt-20 z-50 '>
+      <h1 className="text-white mt-20 font-extrabold text-4xl md:text-6xl mb-4">Osamedic Lab</h1>
+      <p className="text-blue-600 text-lg md:text-2xl mb-6">Your Trusted Partner in Medical Testing</p>
+                </div>
+          </div>
   );
 }
 
 function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login } = useAuth();
+  const { login } = useAuth(); // Auth context for login
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (email === allowedEmail && password === allowedPassword) {
-      login({ email, password }, 'fakeToken'); // Replace 'fakeToken' with actual token logic if needed
-      navigate('/');
-    } else {
-      alert('Invalid credentials');
+    
+    try {
+      await login({ email, password }); 
+      navigate('/HomePage'); 
+    } catch (error) {
+      alert('Invalid credentials or login failed');
     }
   };
 
@@ -70,7 +71,7 @@ function LoginPage() {
       </div>
 
       {/* Login Form Section */}
-      <div className="flex-1 flex px-10 mt-20 items-center justify-center ">
+      <div className="flex-1 flex px-10 mt-20 items-center justify-center">
         <div className="w-full p-10 md:ml-10 max-w-md px-6 py-8 bg-white shadow-lg rounded-xl">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Title */}

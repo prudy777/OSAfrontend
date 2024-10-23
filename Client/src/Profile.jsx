@@ -6,14 +6,14 @@ import { FaCheckCircle } from 'react-icons/fa';
 
 const About = () => {
   return (
-    <section className="py-16 bg-gradient-to-r from-blue-50 to-blue-100">
+    <section className="py-16 bg-gradient-to-r p-5 from-blue-50 to-blue-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section */}
         <Header />
         {/* Description Section */}
         <Description />
         {/* Services and Values Sections */}
-        <div className="grid gap-8 flex flex-row m-20 justify-center items-center  md:grid-cols-2 s mt-12">
+        <div className="grid gap-8 m-20 justify-center items-center md:grid-cols-2 mt-12">
           <ServiceCard />
           <ValuesCard />
         </div> 
@@ -42,8 +42,8 @@ const Header = () => (
 /* ------------------ Description Component ------------------ */
 
 const Description = () => (
-  <div className="bg-white shadow-lg rounded-lg p-8 mb-12">
-    <p className=" text-black font-medium italic p-10">
+  <div className="bg-white shadow-lg rounded-xl p-8 mb-12">
+    <p className="text-gray-800 font-medium italic p-10">
       Osamedic Diagnostics Ltd was established to bridge the gap between the public and access to quality, affordable healthcare in Nigeria. We offer onsite and mobile diagnostic services in Lekki and its environs, sale of medical laboratory equipment and consumables, laboratory setup, registration, management, and consultancy services. Our expertise extends to designing medical structures, selecting appropriate equipment, and optimizing budget allocations for any given project.
     </p>
   </div>
@@ -62,12 +62,12 @@ const ServiceCard = () => {
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 p-6">
-      <h3 className="text-2xl justify-center item-flex font-semibold text-blue-700 mb-4">Our Services</h3>
+    <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 p-6">
+      <h3 className="text-2xl font-semibold text-blue-700 mb-4">Our Services</h3>
       <ul className="space-y-4">
         {services.map((service, index) => (
           <li key={index} className="flex items-start text-blue-600">
-            <FaCheckCircle className="h-6 w-6 text-blue-500 mt-1 mr-3 flex-shrink-0" />
+            <FaCheckCircle className="h-6 w-6 text-blue-500 mt-1 mr-3" />
             <span className="text-base">{service}</span>
           </li>
         ))}
@@ -79,11 +79,11 @@ const ServiceCard = () => {
 /* ------------------ TeamCard Component ------------------ */
 
 const TeamCard = ({ ceoImage, wifeImage }) => (
-  <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 p-6">
-    <h3 className="text-2xl font-semibold flex justify-center items-center text-blue-700 mb-4">Our Team</h3>
-    <div className="flex  flex-row justify-center items-center">
+  <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 p-6">
+    <h3 className="text-2xl font-semibold text-center text-blue-700 mb-4">Our Team</h3>
+    <div className="flex flex-col md:flex-row justify-center items-center">
       {/* CEO Section */}
-      <div className=" flex mr-4 items-center">
+      <div className="flex items-center mb-6 md:mb-0 md:mr-8">
         <img
           src={ceoImage}
           alt="CEO Emmanuel Osawemen"
@@ -95,7 +95,7 @@ const TeamCard = ({ ceoImage, wifeImage }) => (
         </div>
       </div>
       {/* Co-Founder Section */}
-      <div className="flex ml-4 items-center">
+      <div className="flex items-center">
         <img
           src={wifeImage}
           alt="Co-Founder Progress Osawemen"
@@ -107,8 +107,8 @@ const TeamCard = ({ ceoImage, wifeImage }) => (
         </div>
       </div>
     </div>
-    <p className="mt-6  font-bold text-black font-medium ">
-      The driving force behind Osamedic Diagnostics are Mr. Emmanuel Osawemen and his wife, Mrs. Progress Osawemen, both qualified Medical Laboratory Scientists with over a decade of experience in the medical field, supported by a dedicated team of medical advisors. We collaborate with local and international distributors, dealers, and manufacturers to ensure top-notch service and quality.
+    <p className="mt-6 text-gray-800 font-medium">
+      The driving force behind Osamedic Diagnostics are Mr. Emmanuel Osawemen and Mrs. Progress Osawemen, both qualified Medical Laboratory Scientists with over a decade of experience, supported by a dedicated team. We collaborate with local and international distributors to ensure top-notch service and quality.
     </p>
   </div>
 );
@@ -116,10 +116,10 @@ const TeamCard = ({ ceoImage, wifeImage }) => (
 /* ------------------ ValuesCard Component ------------------ */
 
 const ValuesCard = () => (
-  <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 p-6">
+  <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 p-6">
     <h3 className="text-2xl font-semibold text-blue-700 mb-4">Our Values</h3>
-    <p className="text-black font-bold p-5">
-      We are committed to upholding the highest professional and ethical standards in all our business engagements and relationships. Integrity, excellence, and customer satisfaction are at the core of everything we do.
+    <p className="text-gray-800 font-medium">
+      We are committed to upholding the highest professional and ethical standards in all our business engagements. Integrity, excellence, and customer satisfaction are at the core of everything we do.
     </p>
   </div>
 );

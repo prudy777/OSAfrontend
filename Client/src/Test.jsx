@@ -2,35 +2,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import {
-  Container, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, Checkbox, Typography, Button, Box
-} from '@mui/material';
-import { styled } from '@mui/system';
-
-// Styled components for professional checkboxes
-const StyledCheckbox = styled(Checkbox)({
-  color: '#4caf50',
-  '&.Mui-checked': {
-    color: '#66bb6a',
-  },
-});
-
-const HeaderCheckbox = styled(Checkbox)({
-  color: '#1e88e5',
-  '&.Mui-checked': {
-    color: '#42a5f5',
-  },
-  '&.Mui-indeterminate': {
-    color: '#fbc02d',
-  },
-});
 
 const TestBookingsList = () => {
   const [testBookings, setTestBookings] = useState([]);
   const [selectedBookings, setSelectedBookings] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isAllSelected, setIsAllSelected] = useState(false);
 
   // Fetch test bookings on component mount
   useEffect(() => {
@@ -57,137 +35,147 @@ const TestBookingsList = () => {
   };
 
   const handleSelectAll = () => {
-    const allSelected = Object.values(selectedBookings).every(Boolean);
-    const newSelections = {};
-    if (!allSelected) {
+    const newSelection = {};
+    if (!isAllSelected) {
       testBookings.forEach((booking) => {
-        newSelections[booking.test_id] = true;
+        newSelection[booking.test_id] = true;
       });
     }
-    setSelectedBookings(newSelections);
-  };
-
-  const isAllSelected = testBookings.length > 0 &&
-    Object.values(selectedBookings).filter(Boolean).length === testBookings.length;
-
-  const isIndeterminate = Object.values(selectedBookings).some(Boolean) && !isAllSelected;
-
-  const handlePrint = () => {
-    const selectedRows = testBookings.filter((booking) => selectedBookings[booking.test_id]);
-    if (!selectedRows.length) {
-      alert('No bookings selected for printing.');
-      return;
-    }
-
-    const doc = new jsPDF();
-    doc.text('Test Bookings', 14, 16);
-    autoTable(doc, {
-      head: [['ID', 'Patient No', 'Lab No', 'Name', 'Sex', 'Age', 'Specimen', 'Investigation', 'Referred By', 'Date']],
-      body: selectedRows.map((booking) => [
-        booking.test_id,
-        booking.patient_no,
-        booking.lab_no,
-        booking.name,
-        booking.sex,
-        booking.age,
-        booking.specimen,
-        booking.investigation,
-        booking.referredBy,
-        booking.date,
-      ]),
-    });
-    doc.save('test-bookings.pdf');
+    setSelectedBookings(newSelection);
+    setIsAllSelected(!isAllSelected);
   };
 
   const handleDeleteSelected = async () => {
     const selectedIds = Object.keys(selectedBookings).filter((id) => selectedBookings[id]);
+    
     if (!selectedIds.length) {
       alert('No bookings selected for deletion.');
       return;
     }
-
+  
     try {
+      // Assuming your backend API expects the selected IDs in the request body
       await axios.post('http://localhost:4000/test-bookings/delete', { ids: selectedIds });
+      
+      // Update the testBookings state to remove the deleted records
       setTestBookings((prev) =>
         prev.filter((booking) => !selectedIds.includes(String(booking.test_id)))
       );
+      
+      // Clear the selected bookings state after deletion
       setSelectedBookings({});
+      
+      alert('Selected bookings deleted successfully.');
     } catch (err) {
       console.error('Error deleting selected bookings:', err);
+      alert('Failed to delete selected bookings.');
     }
   };
 
-  if (loading) return <Container><Typography>Loading...</Typography></Container>;
-  if (error) return <Container><Typography color="error">{error}</Typography></Container>;
+  const handlePrint = () => {
+    const doc = new jsPDF();
+
+    // Add a title
+    doc.text('Test Bookings Report', 14, 16);
+
+    // Prepare table data
+    const tableData = testBookings.map((booking) => [
+      booking.test_id,
+      booking.patient_no,
+      booking.lab_no,
+      booking.name,
+      booking.sex,
+      booking.age,
+      booking.specimen,
+      booking.investigation,
+      booking.referredBy,
+      booking.date,
+    ]);
+
+    // Auto table for jsPDF
+    autoTable(doc, {
+      head: [['ID', 'Patient No', 'Lab No', 'Name', 'Sex', 'Age', 'Specimen', 'Investigation', 'Referred By', 'Date']],
+      body: tableData,
+    });
+
+    // Save PDF
+    doc.save('test_bookings_report.pdf');
+  };
+
+  if (loading) return <div className="text-center py-8">Loading...</div>;
+  if (error) return <div className="text-center text-red-500 py-8">{error}</div>;
+
+  const isIndeterminate = Object.values(selectedBookings).some((value) => value) && !isAllSelected;
 
   return (
-    <Container>
-      <Typography variant="h4" align="center" gutterBottom>Test Records</Typography>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell padding="checkbox">
-                <HeaderCheckbox
-                  indeterminate={isIndeterminate}
-                  checked={isAllSelected}
+    <div className="container mx-auto p-4">
+      <h2 className="text-2xl font-bold mt-20 text-center mb-8">Test Records</h2>
+      <div className="overflow-x-auto shadow-md sm:rounded-lg">
+        <table className="min-w-full bg-white border border-gray-200">
+          <thead className="bg-blue-600 text-white">
+            <tr>
+              <th className="p-3">
+                <input
+                  type="checkbox"
+                  className="form-checkbox h-5 w-5 text-blue-500"
                   onChange={handleSelectAll}
+                  checked={isAllSelected}
+                  indeterminate={isIndeterminate ? 'indeterminate' : ''}
                 />
-              </TableCell>
-              <TableCell>ID</TableCell>
-              <TableCell>Patient No</TableCell>
-              <TableCell>Lab No</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Sex</TableCell>
-              <TableCell>Age</TableCell>
-              <TableCell>Specimen</TableCell>
-              <TableCell>Investigation</TableCell>
-              <TableCell>Referred By</TableCell>
-              <TableCell>Date</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+              </th>
+              <th className="p-3">ID</th>
+              <th className="p-3">Patient No</th>
+              <th className="p-3">Lab No</th>
+              <th className="p-3">Name</th>
+              <th className="p-3">Sex</th>
+              <th className="p-3">Age</th>
+              <th className="p-3">Specimen</th>
+              <th className="p-3">Investigation</th>
+              <th className="p-3">Referred By</th>
+              <th className="p-3">Date</th>
+            </tr>
+          </thead>
+          <tbody>
             {testBookings.map((booking) => (
-              <TableRow key={booking.test_id}>
-                <TableCell padding="checkbox">
-                  <StyledCheckbox
+              <tr key={booking.test_id} className="hover:bg-gray-100">
+                <td className="p-3 text-center">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox h-5 w-5 text-blue-500"
                     checked={selectedBookings[booking.test_id] || false}
                     onChange={() => handleCheckboxChange(booking.test_id)}
                   />
-                </TableCell>
-                <TableCell>{booking.test_id}</TableCell>
-                <TableCell>{booking.patient_no}</TableCell>
-                <TableCell>{booking.lab_no}</TableCell>
-                <TableCell>{booking.name}</TableCell>
-                <TableCell>{booking.sex}</TableCell>
-                <TableCell>{booking.age || 'N/A'}</TableCell>
-                <TableCell>{booking.specimen}</TableCell>
-                <TableCell>{booking.investigation}</TableCell>
-                <TableCell>{booking.referredBy}</TableCell>
-                <TableCell>{booking.date}</TableCell>
-              </TableRow>
+                </td>
+                <td className="p-3">{booking.test_id}</td>
+                <td className="p-3">{booking.patient_no}</td>
+                <td className="p-3">{booking.lab_no}</td>
+                <td className="p-3">{booking.name}</td>
+                <td className="p-3">{booking.sex}</td>
+                <td className="p-3">{booking.age || 'N/A'}</td>
+                <td className="p-3">{booking.specimen}</td>
+                <td className="p-3">{booking.investigation}</td>
+                <td className="p-3">{booking.referredBy}</td>
+                <td className="p-3">{booking.date}</td>
+              </tr>
             ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-        <Button
-          variant="contained"
-          color="primary"
+          </tbody>
+        </table>
+      </div>
+      <div className="flex justify-end mt-4">
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mr-2"
           onClick={handlePrint}
-          sx={{ marginRight: '10px' }}
         >
           Print
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
+        </button>
+        <button
+          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
           onClick={handleDeleteSelected}
         >
           Delete Selected
-        </Button>
-      </Box>
-    </Container>
+        </button>
+      </div>
+    </div>
   );
 };
 
