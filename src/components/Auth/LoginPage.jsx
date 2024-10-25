@@ -57,7 +57,7 @@ function LoginPage() {
     
     try {
       await login({ email, password }); 
-      navigate('/HomePage'); 
+      navigate('/'); 
     } catch (error) {
       alert('Invalid credentials or login failed');
     }
