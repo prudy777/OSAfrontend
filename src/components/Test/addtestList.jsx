@@ -129,7 +129,7 @@ const TestBooking = () => {
           return;
         }
       }
-      const response = await axios.post('https://osamedic.vercel.app/test-booking', {
+      const response = await axios.post('https://osamedic.onrender.com/test-booking', {
         ...patientData,
         tests
       });

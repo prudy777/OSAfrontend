@@ -9,7 +9,7 @@ const Patient = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    axios.get(`https://osamedic.vercel.app/patients/${id}`)
+    axios.get(`https://osamedic.onrender.com/patients/${id}`)
       .then(response => {
         setPatient(response.data);
         setLoading(false);

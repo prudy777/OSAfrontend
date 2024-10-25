@@ -209,7 +209,7 @@ const handleSubmit = async (patientData, tests, setLoading) => {
       investigation: patientData.investigation,
     }));
 
-    const response = await axios.post('https://osamedic.vercel.app/printed-tests', {
+    const response = await axios.post('https://osamedic.onrender.com/printed-tests', {
       patientData,
       tests: testsWithPatientData, // Send the updated tests with patientData merged
     });

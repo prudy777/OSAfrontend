@@ -12,7 +12,7 @@ const PrintedTests = () => {
   useEffect(() => {
     const fetchPrintedTests = async () => {
       try {
-        const response = await axios.get('https://osamedic.vercel.app/masters');
+        const response = await axios.get('https://osamedic.onrender.com/masters');
         setPrintedTests(response.data);
         setFilteredTests(response.data); // Initialize with full data
       } catch (error) {

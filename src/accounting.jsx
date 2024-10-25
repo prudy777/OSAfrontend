@@ -20,7 +20,7 @@ const AccountingPage = () => {
 
   const fetchTransactions = useCallback(async () => {
     try {
-      const response = await axios.get('https://backend-osa.onrender.com/accounting/transactions');
+      const response = await axios.get('https://osamedic.onrender.com/accounting/transactions');
       setTransactions(response.data);
       calculateSummary(response.data);
     } catch (error) {
@@ -30,7 +30,7 @@ const AccountingPage = () => {
 
   const fetchBudgetReport = useCallback(async () => {
     try {
-      const response = await axios.get('https://backend-osa.onrender.com/api/budget-report');
+      const response = await axios.get('https://osamedic.onrender.com/api/budget-report');
       setBudgetData(response.data);
     } catch (error) {
       console.error('Error fetching budget report:', error);
@@ -39,7 +39,7 @@ const AccountingPage = () => {
 
   const fetchPrintedTestsSummary = useCallback(async () => {
     try {
-      const response = await axios.get('https://backend-osa.onrender.com/printed-tests-summary');
+      const response = await axios.get('https://osamedic.onrender.com/printed-tests-summary');
       setMonthlyData(response.data.monthly);
       setWeeklyData(response.data.weekly);
       setGenderData(response.data.gender);

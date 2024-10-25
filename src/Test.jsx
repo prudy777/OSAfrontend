@@ -14,7 +14,7 @@ const TestBookingsList = () => {
   useEffect(() => {
     const fetchTestBookings = async () => {
       try {
-        const response = await axios.get('https://osamedic.vercel.app/test-bookings');
+        const response = await axios.get('https://osamedic.onrender.com/test-bookings');
         if (response.data && Array.isArray(response.data)) {
           setTestBookings(response.data);
         }
@@ -55,7 +55,7 @@ const TestBookingsList = () => {
   
     try {
       // Assuming your backend API expects the selected IDs in the request body
-      await axios.post('https://osamedic.vercel.app/test-bookings/delete', { ids: selectedIds });
+      await axios.post('https://osamedic.onrender.com/test-bookings/delete', { ids: selectedIds });
       
       // Update the testBookings state to remove the deleted records
       setTestBookings((prev) =>

@@ -82,7 +82,7 @@ const Register = ({ onRegisterSuccess }) => {
     const submissionTime = new Date().toLocaleString();
 
     try {
-      await axios.post("https://osamedic.vercel.app/register", {
+      await axios.post("https://osamedic.onrender.com/register", {
         first_name: formData.firstName,
         last_name: formData.lastName,
         dob: formData.dateOfBirth,

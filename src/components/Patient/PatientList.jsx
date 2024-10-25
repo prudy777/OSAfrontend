@@ -8,7 +8,7 @@ const PatientList = ({ refresh }) => {
 
   const fetchPatients = async () => {
     try {
-      const response = await axios.get('https://osamedic.vercel.app/patients');
+      const response = await axios.get('https://osamedic.onrender.com/patients');
       setPatients(response.data);
     } catch (error) {
       console.error(error);
@@ -22,7 +22,7 @@ const PatientList = ({ refresh }) => {
 
   const handleStatusChange = async (id, status) => {
     try {
-      await axios.put(`https://osamedic.vercel.app/patients/${id}/status`, { status });
+      await axios.put(`https://osamedic.onrender.com/patients/${id}/status`, { status });
       setPatients(prevPatients => prevPatients.map(patient =>
         patient.id === id ? { ...patient, status } : patient
       ));
@@ -38,7 +38,7 @@ const PatientList = ({ refresh }) => {
 
   const handlePaymentStatusChange = async (id, paymentStatus) => {
     try {
-      await axios.put(`https://osamedic.vercel.app/patients/${id}/payment-status`, { paymentStatus });
+      await axios.put(`https://osamedic.onrender.com/patients/${id}/payment-status`, { paymentStatus });
       setPatients(prevPatients => prevPatients.map(patient =>
         patient.id === id ? { ...patient, payment_status: paymentStatus } : patient
       ));
@@ -51,7 +51,7 @@ const PatientList = ({ refresh }) => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`https://osamedic.vercel.app/patients/${id}`);
+      await axios.delete(`https://osamedic.onrender.com/patients/${id}`);
       setPatients(prevPatients => prevPatients.filter(patient => patient.id !== id));
       alert('Patient declined and deleted successfully!');
     } catch (error) {

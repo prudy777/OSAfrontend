@@ -16,7 +16,7 @@ function SignupPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('https://osamedic.vercel.app/signup', { email, password, isAdmin });
+            const response = await axios.post('https://osamedic.onrender.com/signup', { email, password, isAdmin });
             alert(response.data); // Display server response
             navigate('/login');
         } catch (error) {

@@ -9,7 +9,7 @@ const AcceptedPatients = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('https://osamedic.vercel.app/accepted-patients')
+    axios.get('https://osamedic.onrender.com/accepted-patients')
       .then(response => {
         setPatients(response.data);
         setLoading(false);
