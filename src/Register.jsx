@@ -120,7 +120,7 @@ const Register = ({ onRegisterSuccess }) => {
       }
 
       // Navigate to the TestList page and pass the phone number as state
-      navigate("/test-list", { state: { phone: formData.phone } });
+      navigate("/", { state: { phone: formData.phone } });
     } catch (error) {
       console.error("There was an error submitting the form:", error);
       alert("Registration failed. Please try again.");
