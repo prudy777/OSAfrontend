@@ -65,7 +65,7 @@ function LoginPage() {
       // Wait for animation and then navigate
       setTimeout(() => {
         navigate('/'); // Navigate after the animation
-      }, 3000); // 2 seconds wait for animation
+      }, 3000); // 3 seconds wait for animation
     } catch (error) {
       setLoading(false);
       alert('Invalid credentials or login failed');

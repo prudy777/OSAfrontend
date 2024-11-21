@@ -15,10 +15,14 @@ const TestBookingsList = () => {
     const fetchTestBookings = async () => {
       try {
         const response = await axios.get('https://osamedic.onrender.com/test-bookings');
+        console.log('Fetched test bookings:', response.data); // Debugging log
         if (response.data && Array.isArray(response.data)) {
           setTestBookings(response.data);
+        } else {
+          console.warn('Unexpected response format:', response.data);
         }
       } catch (err) {
+        console.error('Error fetching test bookings:', err);
         setError('Failed to fetch test bookings');
       } finally {
         setLoading(false);
@@ -27,6 +31,7 @@ const TestBookingsList = () => {
     fetchTestBookings();
   }, []);
 
+  // Handle individual checkbox change
   const handleCheckboxChange = (id) => {
     setSelectedBookings((prev) => ({
       ...prev,
@@ -34,44 +39,47 @@ const TestBookingsList = () => {
     }));
   };
 
+  // Handle select all checkbox
   const handleSelectAll = () => {
     const newSelection = {};
     if (!isAllSelected) {
       testBookings.forEach((booking) => {
-        newSelection[booking.test_id] = true;
+        newSelection[booking._id] = true;
       });
     }
     setSelectedBookings(newSelection);
     setIsAllSelected(!isAllSelected);
   };
 
+  // Handle deletion of selected bookings
   const handleDeleteSelected = async () => {
     const selectedIds = Object.keys(selectedBookings).filter((id) => selectedBookings[id]);
-    
+    console.log('Selected IDs for deletion:', selectedIds); // Debugging log
+
     if (!selectedIds.length) {
       alert('No bookings selected for deletion.');
       return;
     }
-  
+
     try {
-      // Assuming your backend API expects the selected IDs in the request body
-      await axios.post('https://osamedic.onrender.com/test-bookings/delete', { ids: selectedIds });
-      
-      // Update the testBookings state to remove the deleted records
+      const response = await axios.post('https://osamedic.onrender.com/test-bookings/delete', { ids: selectedIds });
+      console.log('Delete response:', response.data); // Log response for debugging
+
+      // Update the state to remove deleted bookings
       setTestBookings((prev) =>
-        prev.filter((booking) => !selectedIds.includes(String(booking.test_id)))
+        prev.filter((booking) => !selectedIds.includes(booking._id))
       );
-      
-      // Clear the selected bookings state after deletion
+
+      // Clear selected bookings
       setSelectedBookings({});
-      
       alert('Selected bookings deleted successfully.');
     } catch (err) {
-      console.error('Error deleting selected bookings:', err);
+      console.error('Error deleting selected bookings:', err.response?.data || err.message);
       alert('Failed to delete selected bookings.');
     }
   };
 
+  // Handle printing test bookings
   const handlePrint = () => {
     const doc = new jsPDF();
 
@@ -80,7 +88,7 @@ const TestBookingsList = () => {
 
     // Prepare table data
     const tableData = testBookings.map((booking) => [
-      booking.test_id,
+      booking._id,
       booking.patient_no,
       booking.lab_no,
       booking.name,
@@ -89,7 +97,7 @@ const TestBookingsList = () => {
       booking.specimen,
       booking.investigation,
       booking.referredBy,
-      booking.date,
+      new Date(booking.date).toLocaleDateString(),
     ]);
 
     // Auto table for jsPDF
@@ -137,16 +145,16 @@ const TestBookingsList = () => {
           </thead>
           <tbody>
             {testBookings.map((booking) => (
-              <tr key={booking.test_id} className="hover:bg-gray-100">
+              <tr key={booking._id} className="hover:bg-gray-100">
                 <td className="p-3 text-center">
                   <input
                     type="checkbox"
                     className="form-checkbox h-5 w-5 text-blue-500"
-                    checked={selectedBookings[booking.test_id] || false}
-                    onChange={() => handleCheckboxChange(booking.test_id)}
+                    checked={selectedBookings[booking._id] || false}
+                    onChange={() => handleCheckboxChange(booking._id)}
                   />
                 </td>
-                <td className="p-3">{booking.test_id}</td>
+                <td className="p-3">{booking._id}</td>
                 <td className="p-3">{booking.patient_no}</td>
                 <td className="p-3">{booking.lab_no}</td>
                 <td className="p-3">{booking.name}</td>
@@ -155,7 +163,7 @@ const TestBookingsList = () => {
                 <td className="p-3">{booking.specimen}</td>
                 <td className="p-3">{booking.investigation}</td>
                 <td className="p-3">{booking.referredBy}</td>
-                <td className="p-3">{booking.date}</td>
+                <td className="p-3">{new Date(booking.date).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>

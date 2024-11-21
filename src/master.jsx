@@ -28,7 +28,8 @@ const PrintedTests = () => {
 
   useEffect(() => {
     const results = printedTests.filter(test =>
-      test
+      test.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      test.patient_id.toString().includes(searchTerm)
     );
     setFilteredTests(results);
   }, [searchTerm, printedTests]);
@@ -55,7 +56,7 @@ const PrintedTests = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-300 p-4">
-      <div className="max-w-7xl mx-auto mt-20 bg-white shadow-lg rounded-lg p-6">
+      <div className="max-w-7xl mx-auto bg-white shadow-lg rounded-lg p-6">
         <h1 className="text-3xl font-bold text-blue-700 mb-6">Printed Tests Results</h1>
 
         {/* Search Bar */}

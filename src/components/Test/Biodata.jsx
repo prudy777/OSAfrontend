@@ -187,7 +187,7 @@ const Biodata = ({ setPatientData, setTests }) => {  // Add props for passing th
 const handleSubmit = async (patientData, tests, setLoading) => {
   setLoading(true);
   try {
-    console.log("Submitting:", patientData, tests); // Log to see the actual data being submitted
+    console.log("Submitting:", patientData, tests);
 
     if (!tests || tests.length === 0) {
       throw new Error("No tests provided. Please add at least one test.");
@@ -196,7 +196,6 @@ const handleSubmit = async (patientData, tests, setLoading) => {
     // Merge patientData into each test in the tests array
     const testsWithPatientData = tests.map(test => ({
       ...test,
-      patient_id: patientData.patient_no,
       lab_no: patientData.lab_no,
       name: patientData.name,
       sex: patientData.sex,
@@ -209,24 +208,32 @@ const handleSubmit = async (patientData, tests, setLoading) => {
       investigation: patientData.investigation,
     }));
 
-    const response = await axios.post('https://osamedic.onrender.com/printed-tests', {
+    // Save to printed-tests
+    const printedTestsResponse = await axios.post('https://osamedic.onrender.com/printed-tests', {
       patientData,
-      tests: testsWithPatientData, // Send the updated tests with patientData merged
+      tests: testsWithPatientData,
     });
+    console.log('Printed tests saved successfully:', printedTestsResponse.data);
 
-    console.log('Saved successfully:', response.data);
-    alert('Test booking saved successfully!');
+    // Save to test-bookings
+    for (const bookingData of testsWithPatientData) {
+      const testBookingResponse = await axios.post('https://osamedic.onrender.com/test-bookings', bookingData);
+      console.log('Test booking saved successfully:', testBookingResponse.data);
+    }
+
+    alert('Test booking and printed tests saved successfully!');
   } catch (error) {
-    console.error('Error saving test booking:', error);
+    console.error('Error saving test booking or printed tests:', error);
     if (error.response && error.response.status === 400) {
       alert(`Error: ${error.response.data}`);
     } else {
-      alert('Failed to save test booking.');
+      alert('Failed to save test booking or printed tests.');
     }
   } finally {
     setLoading(false);
   }
 };
+
 
 
 export { handleSubmit };

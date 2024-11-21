@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 
 const AcceptedPatients = () => {
   const [patients, setPatients] = useState([]);
@@ -40,7 +41,7 @@ const AcceptedPatients = () => {
         <table className="w-full table-auto bg-white shadow-lg rounded-lg border border-gray-200">
           <thead>
             <tr className="bg-blue-600 text-white">
-              <th className="py-3 px-6">ID</th>
+              <th className="py-3 px-6">Patient No</th>
               <th className="py-3 px-6">First Name</th>
               <th className="py-3 px-6">Last Name</th>
               <th className="py-3 px-6">Date of Birth</th>
@@ -53,14 +54,14 @@ const AcceptedPatients = () => {
           <tbody>
             {patients.map(patient => (
               <tr 
-                key={patient.id} 
+                key={patient.patient_no} 
                 onClick={() => handleRowClick(patient)} 
                 className="cursor-pointer hover:bg-blue-100 transition-all border-b"
               >
-                <td className="py-3 px-6 text-green-600">{patient.id}</td>
+                <td className="py-3 px-6 text-green-600">{patient.patient_no}</td>
                 <td className="py-3 px-6">{patient.first_name}</td>
                 <td className="py-3 px-6">{patient.last_name}</td>
-                <td className="py-3 px-6">{patient.dob}</td>
+                <td className="py-3 px-6">{format(new Date(patient.dob), 'MM/dd/yyyy')}</td> {/* Formatted DOB */}
                 <td className="py-3 px-6">{patient.email}</td>
                 <td className="py-3 px-6">{patient.phone}</td>
                 <td className="py-3 px-6">{patient.test_type}</td>
